@@ -438,21 +438,42 @@ body {
 <script>
 document.getElementById('notifyForm').addEventListener('submit', function(e) {
   e.preventDefault();
-  const input = this.querySelector('input');
+  const form = this;
+  const input = form.querySelector('input');
+  const btn = form.querySelector('button');
   const msg = document.getElementById('formMsg');
   const email = input.value.trim();
-  if (email && email.includes('@')) {
-    this.classList.add('success');
+  if (!email || !email.includes('@')) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  fetch('https://script.google.com/macros/s/AKfycbyWkVljEnmPf5pymEzpgzXqGRuHZHcC-YcvuxG2mz08eW8q2KqO1kMZvTFtFVQNw4SEXQ/exec', {
+    method: 'POST',
+    body: JSON.stringify({ email: email }),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function() {
+    form.classList.add('success');
     input.value = '';
     input.placeholder = 'Thank you';
     msg.textContent = 'Grateful to have you on this journey.';
     msg.classList.add('visible');
-    setTimeout(() => {
+    setTimeout(function() {
       input.placeholder = 'Enter your email for early access';
-      this.classList.remove('success');
+      form.classList.remove('success');
       msg.classList.remove('visible');
     }, 4000);
-  }
+  })
+  .catch(function() {
+    msg.textContent = 'Something went wrong. Please try again.';
+    msg.classList.add('visible');
+    setTimeout(function() { msg.classList.remove('visible'); }, 3000);
+  })
+  .finally(function() {
+    btn.disabled = false;
+    btn.textContent = 'Notify Me';
+  });
 });
 </script>
 </body>
